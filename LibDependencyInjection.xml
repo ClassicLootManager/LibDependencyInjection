@@ -1,0 +1,9 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <Script file="source/Context.lua"/>
+    <Script file="source/StubLoader.lua"/>
+    <Script file="source/FirstEventLoader.lua"/>
+    <Script file="source/MetaLoader.lua"/>
+    <Script file="source/SavedVariableLoader.lua"/>
+    <Script file="source/Demo.lua"/>
+</Ui>
