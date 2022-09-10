@@ -3,7 +3,7 @@
 Historically dependency loading in WoW addons is solved in multiple ways:
 - controlling the file loading order
 - everyone including every library (since that's the only way they can be sure dependencies load before code that requires them)
-- using LibStub for as a service locator
+- using LibStub as a service locator
 
 # Dependency injection
 
@@ -14,7 +14,37 @@ Added benefit of this approach is that you'll automatically get local references
 
 In this readme a dependency is anything your addon requires before initializing itself. Your addon can (and probably should) be modular, so each part of your addon may depend on both external and internal dependencies. Environmental dependencies are supported as well.
 
-## Code sample
+# Syntax
+
+When defining a module you'll have 2 lines of boilerplate, regardless of the number of dependencies.
+Below is an exampe, the first 2 lines of code are the boilerplate (and the last one as well if you want to be precise)
+```lua
+-- we use this to create a DI container just for your addon
+-- you may use this in any file, you'll always get the same DI container
+local define = createContext(...)
+
+-- you declare your modules like this:
+define.module("module name", {"list", "of", "dependencies"}, function(resolve, list, of, dependencies)
+    -- this function is called when all its dependencies are available, these dependencies are passed as parameters so you have them immediately available as local variable!
+
+    -- your module is define when you call the first parameter with your module as an argument. Your module should probably be a table, but any non-nil value is allowed
+    local myModule = {}
+    function myModule:Add(a, b)
+        return a + b
+    end
+
+    -- call resolve when your module is initialized. You do not have to do this immediately, you could wait for events or put a delay on it if you want to.
+    C_Timer.After(15, function()
+    resolve(myModule)
+    end)
+
+    -- the return value of this function is ignored
+end)
+
+
+```
+
+## Code samples
 
 ```lua
 
