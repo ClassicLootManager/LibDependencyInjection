@@ -60,7 +60,7 @@ local function waitForDependencies(dependencies, loadedDependencies, callback)
 end
 
 
-local function createContextTable(prefixContext, addonName)
+local function createContextTable(prefixContext, addonName, addonTable)
     local r = {}
 
     -- a dictionary of modules that have been loaded
@@ -70,6 +70,24 @@ local function createContextTable(prefixContext, addonName)
     -- a list of callbacks that should be called after each any new module has been resolved
     -- the function must return a boolean; when false it'll be retried later, when true it is removed from the list
     local waiting = {}
+
+    C_Timer.After(4, function()
+        local yellow = CreateColor(1, 1, 0)
+        local red = CreateColor(1, 0, 0)
+        local green = CreateColor(0, 1, 0)
+            for _, v in pairs(waiting) do
+                local deps = {}
+                for _, d in pairs(v[2]) do
+                    if modules[d] ~= nil then
+                        deps[#deps + 1] = green:WrapTextInColorCode(d)
+                    else
+                        deps[#deps + 1] = red:WrapTextInColorCode(d)
+                    end
+
+                end
+                print(string.format("%s is waiting for %s", yellow:WrapTextInColorCode(v[3] or "NONAME"), table.concat(deps, ', ')))
+            end
+    end)
     local depth = 0
     local checkAllWaitingCallbacks = function()
         if depth ~= 0 then
@@ -93,9 +111,6 @@ local function createContextTable(prefixContext, addonName)
             if (module == nil) then
                 error(string.format("Module %s MUST NOT resolve to nil", name))
             end
-            if modules[name] ~= nil then
-                error(string.format("Resolving already loaded module %s", name))
-            end
             -- print(string.format("[[%s]] Loaded module %s, current depth: %d", addonName, name, depth))
             modules[name] = module
             return checkAllWaitingCallbacks()
@@ -104,7 +119,7 @@ local function createContextTable(prefixContext, addonName)
     end
 
     -- wait for a dependency, call a callback when loaded passing the dependencies as arguments
-    local await = function(dependencies, callback)
+    local await = function(dependencies, callback, name)
         if (#dependencies == 0) then
             return callback()
         end
@@ -125,7 +140,7 @@ local function createContextTable(prefixContext, addonName)
 
                     local resolve = createResolve(dep)
                     -- print("retriever", param, addonName)
-                    return retriever(resolve, param, addonName, r)
+                    return retriever(resolve, param, addonName, addonTable)
                 end)
             end
         end
@@ -133,16 +148,16 @@ local function createContextTable(prefixContext, addonName)
         -- try direct load.
         local waiter = waitForDependencies(dependencies, modules, callback)
         if waiter() == false then
-            waiting[#waiting + 1] = {waiter, dependencies}
+            waiting[#waiting + 1] = {waiter, dependencies, name}
         end
         -- print(string.format("Now have %d waiters and %d resolved waiters in %s", count - 1, resolved, addonName))
     end
 
     local defineModule = function(name, dependencies, callback)
-        -- print(string.format("Defining module %s with requested dependencies: %s", name, table.concat(dependencies, ', ')))
+        -- print(string.format("Defining module %s", name, table.concat(dependencies, ', ')))
         return await(dependencies, function(...)
             return callback(createResolve(name), ...)
-        end)
+        end, name)
     end
 
     local meta = {
@@ -159,7 +174,7 @@ local function createContextTable(prefixContext, addonName)
 
 end
 
-local prefixContext = createContextTable(nil, "[[internal]]");
+local prefixContext = createContextTable(nil, "[[internal]]", {});
 
 
 function lib.registerGlobalPrefix(prefix, retriever)
@@ -171,7 +186,9 @@ end
 
 function lib.createContext(addonName, addonTable)
     if addonTable._diContainer == nil then
-        addonTable._diContainer = createContextTable(prefixContext, addonName)
+        addonTable._diContainer = createContextTable(prefixContext, addonName, addonTable)
+
     end
+
     return addonTable._diContainer
 end

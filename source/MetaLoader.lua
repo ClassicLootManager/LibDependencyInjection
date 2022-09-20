@@ -21,8 +21,8 @@ frame:SetScript("OnEvent", function(self, event, arg1)
     end
 end)
 
-LibDependencyInjection.registerGlobalPrefix('Meta', function(resolve, eventName, addonName, context)
-    if (eventName == 'ADDON_LOADED') then
+LibDependencyInjection.registerGlobalPrefix('Meta', function(resolve, name, addonName, addonTable)
+    if (name == 'ADDON_LOADED') then
         -- check already loaded
         if loadedAddons[addonName] ~= nil then
             return resolve(true)
@@ -32,9 +32,10 @@ LibDependencyInjection.registerGlobalPrefix('Meta', function(resolve, eventName,
         else
             table.insert(addonLoadedResolvers[addonName], resolve)
         end
-        frame:RegisterEvent('ADDON_LOADED')
-        return
+        return frame:RegisterEvent('ADDON_LOADED')
+    elseif name == "ADDON_TABLE" then
+        return resolve(addonTable)
     end
-    error(string.format("Unknown meta event: %s", eventName))
+    error(string.format("Unknown meta event: %s", name))
 
 end)

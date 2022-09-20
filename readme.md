@@ -21,7 +21,7 @@ Below is an exampe, the first 2 lines of code are the boilerplate (and the last 
 ```lua
 -- we use this to create a DI container just for your addon
 -- you may use this in any file, you'll always get the same DI container
-local define = createContext(...)
+local define = LibDependencyInjection.createContext(...)
 
 -- you declare your modules like this:
 define.module("module name", {"list", "of", "dependencies"}, function(resolve, list, of, dependencies)
@@ -49,7 +49,7 @@ end)
 ```lua
 
 -- we'll use the addonName in case we need it, we'll also store the DI container in your addon's table under the key _diContainer
-local define = createContext(...)
+local define = LibDependencyInjection.createContext(...)
 
 define.module("ModuleC", {"ModuleA", "ModuleB"}, function(resolve, a, b)
     -- initialize module C here
@@ -72,7 +72,7 @@ We support special prefixes to allow loading common types of dependencies. A pre
 
 Your code can require libraries registered via LibStub:
 ```lua
-local define = createContext(...)
+local define = LibDependencyInjection.createContext(...)
 
 define.module("ModuleC", {"ModuleA", "ModuleB", "LibStub:LibSerialize1.0"}, function(resolve, a, b, libSerialize)
     -- initialize module C here
@@ -95,7 +95,7 @@ Your code might need access to some saved variables; we'll wait for them to be l
 - This will initialize `nil` values to an empty table, your saved variable(s) should be tables
 
 ```lua
-local define = createContext(...)
+local define = LibDependencyInjection.createContext(...)
 
 define.module("ModuleC", {"ModuleA", "ModuleB", "SavedVariable:LIB_DI_SAVED_VAR"}, function(resolve, a, b, savedVariable)
     -- initialize module C here
@@ -117,7 +117,7 @@ Sometimes your addon might depend on an event before it can be loaded. For examp
 The FirstEvent prefix allows you to wait for these events.
 
 ```lua
-local define = createContext(...)
+local define = LibDependencyInjection.createContext(...)
 
 define.module("ModuleC", {"ModuleA", "ModuleB", "FirstEvent:PLAYER_ENTERING_WORLD"}, function(resolve, a, b, savedVariable)
     -- initialize module C here
@@ -139,7 +139,7 @@ Supported parameters are listed here:
 #### ADDON_LOADED
 
  ```lua
-local define = createContext(...)
+local define = LibDependencyInjection.createContext(...)
 
 define.module("ModuleC", {"ModuleA", "ModuleB", "Meta:ADDON_LOADED"}, function(resolve, a, b, _)
 

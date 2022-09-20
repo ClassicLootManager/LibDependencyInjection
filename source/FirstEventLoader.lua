@@ -24,17 +24,21 @@ frame:SetScript("OnEvent", function(self, event, ...)
     if eventCache[event] == nil then
         -- print("Adding to event cache:", event)
         frame:UnregisterEvent(event)
-        eventCache[event] = {...}
+        local args = {...}
+        if #args == 0 then
+            args = {"no args"}
+        end
+        eventCache[event] = args
 
         local eventResolvers = resolvers[event] or {}
         resolvers[event] = {}
         for _, resolve in pairs(eventResolvers) do
-            resolve(...)
+            resolve(unpack(args))
         end
     end
 end)
 
-LibDependencyInjection.registerGlobalPrefix('FirstEvent', function(resolve, eventName, addonName)
+LibDependencyInjection.registerGlobalPrefix('FirstEvent', function(resolve, eventName, addonName, addonTable)
 
     -- event might have been triggered in the past
     if (eventCache[eventName] ~= nil) then
